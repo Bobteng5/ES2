@@ -1,0 +1,164 @@
+<!doctype html>
+<html>
+	<head>
+		<title>ES2</title>
+	</head>
+	<body>
+		<div style="height:250px;  margin: 0 auto;">
+			<div style="background-color:#00FFFF; height:70%; width:30%; padding:15px 20px; float:left;">
+		 		  <h1 style="color: black; height:50%; width:100%; letter-spacing: 1px; text-align: center;  font-size: 2em; margin: 0.67em 0;">x:</h1> 
+				  <div id="x" style="float:middle; text-align:center; font-size: 2em;"> </div>  
+	    	</div>
+			<div style="background-color:#00DDDD; height:70%; width:30%; padding:15px 20px; float:left;">
+		 		   <h1 style="color: black;  height:50%; width:100%; letter-spacing: 1px; text-align: center;  font-size: 2em; margin: 0.67em 0;">y:</h1>  
+	    		   <div id="y" style="float:middle; text-align:center; font-size: 2em;"> </div>
+			</div>
+			<div style="background-color:#00AAAA; height:70%; width:30%; padding:15px 20px; float:left;">
+		 		   <h1 style="color: black;  height:50%; width:100%; letter-spacing: 1px; text-align: center;  font-size: 2em; margin: 0.67em 0;">z:</h1>  
+	    	       <div id="z" style="float:middle; text-align:center; font-size: 2em;"> </div>
+			</div>
+		</div style="height:250px; float:middle;">
+		    <div style="background-color:#00FF00; height:70%; width:30%; padding:15px 20px; margin: 0 auto;">
+		 		   <h1 style="color: black;  height:50%; width:100%; letter-spacing: 1px; text-align: center;  font-size: 2em; margin: 0.67em 0;">fliptimes:</h1>  
+	    		   <div id="fliptimes" style="float:middle; text-align:center; font-size: 2em;"> </div>
+			</div>
+			<div style="background-color:#00DD00; height:70%; width:30%; padding:15px 20px; margin: 0 auto; ">
+		 		   <h1 style="color: black;  height:50%; width:100%; letter-spacing: 1px; text-align: center;  font-size: 2em; margin: 0.67em 0;">state:</h1>  
+	    	       <div id="flip" style="float:middle; text-align:center; font-size: 2em;"> </div>
+			</div>
+			
+
+        </div>
+		<div style="margin:0 auto;text-align:center;"> 
+		 <input type="button" value="reset"  onclick="reset()" style="width:120px;height:40px;font-size:20px;margin: 0.67em 0;">
+        </div>
+</body>
+</html>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+<script>	
+var state=1;
+var fliptimes=0;
+var inverse=0;
+var socket = io.connect('/');
+$(function () {
+	// var socket = io.connect('/');
+    var ini=0;
+	var tempz=0;
+	socket.on('acc', function(x, y, z){
+	    if (ini==0) 
+    	 { if(z<-0.75)
+    	    { state=0;
+     	     ini=1;}
+     	   else if(z>0.75)
+     		{ state=1;
+     		  ini=1;}
+		   else 
+     		{ ini=0;}	
+    	 }
+	document.getElementById('x').innerHTML="";
+	var a = x + "<br />";
+	console.log(x);
+	$('div#x').append(a);
+	document.getElementById('y').innerHTML="";
+	var b = y + "<br />";
+	$('div#y').append(b);
+	document.getElementById('z').innerHTML="";
+	var c = z + "<br />";
+	$('div#z').append(c);
+	if(inverse==0) {
+		if(state==1)   //postive
+		  { if(tempz>-0.75 && z<=-0.75)
+		  		{ state=0;
+				  document.getElementById('flip').innerHTML="";
+                  var f = "up to down!!!";
+				  $('div#flip').append(f);
+				  fliptimes=fliptimes+1;
+				  f = fliptimes;
+				  document.getElementById('fliptimes').innerHTML="";
+				  $('div#fliptimes').append(f);
+				}
+		  }
+		if(state==0)  
+		  { if(tempz<0.75 && z>=0.75)
+		  		{ state=1;
+				  document.getElementById('flip').innerHTML="";
+                  var f = "down to up!!!";
+		          $('div#flip').append(f);
+				  fliptimes=fliptimes+1;
+				  f = fliptimes;
+				  document.getElementById('fliptimes').innerHTML="";
+				  $('div#fliptimes').append(f);
+				}
+		  }
+	}
+	if(inverse==1){
+		if(state==1)   //postive
+		  { if(tempz<0.75 && z>=0.75)
+		  		{ state=0;
+				  document.getElementById('flip').innerHTML="";
+                  var f = "up to down!!!";
+				  $('div#flip').append(f);
+				  fliptimes=fliptimes+1;
+				  f = fliptimes;
+				  document.getElementById('fliptimes').innerHTML="";
+				  $('div#fliptimes').append(f);
+				}
+		  }
+		if(state==0)  
+		  { if(tempz>-0.75 && z<=-0.75)
+		  		{ state=1;
+				  document.getElementById('flip').innerHTML="";
+                  var f = "down to up!!!";
+		          $('div#flip').append(f);
+				  fliptimes=fliptimes+1;
+				  f = fliptimes;
+				  document.getElementById('fliptimes').innerHTML="";
+				  $('div#fliptimes').append(f);
+				}
+		  }
+	}	  
+	tempz=z;
+	});
+});
+
+function reset() {
+	fliptimes=0;
+	var re = fliptimes;
+	document.getElementById('fliptimes').innerHTML="";
+	$('div#fliptimes').append(re);
+	if(inverse==0)
+		 { if(state==1)
+		    { re = "reset(non-inverse)";
+			  document.getElementById('flip').innerHTML="";
+			  $('div#flip').append(re);
+			  socket.emit('off');
+			}
+		   if(state==0)
+		    { inverse=1;
+              state=1;
+			  re = "reset(inverse)";
+			  document.getElementById('flip').innerHTML="";
+           	  $('div#flip').append(re);
+			  socket.emit('on');
+			}
+		 }
+	if(inverse==1)
+		 { if(state==1)
+		    { re = "reset(inverse)";
+			  document.getElementById('flip').innerHTML="";
+           	  $('div#flip').append(re);
+			  socket.emit('on');
+			}
+		   if(state==0)
+		    { inverse=0;
+              state=1;
+			  re = "reset(non-inverse)";
+			  document.getElementById('flip').innerHTML="";
+           	  $('div#flip').append(re);
+			  socket.emit('off');
+			}
+		 } 		
+}
+         
+</script>
